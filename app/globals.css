@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
+/* App brand palette */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base palette from assignment screenshot */
+  --ink: #0D1821;        /* Rich black */
+  --foam: #EFF1F3;       /* Anti-flash white */
+  --green: #4E6E5D;      /* Hooker's green */
+  --sand: #AD8A64;       /* Lion */
+  --chestnut: #A44A3F;   /* Chestnut */
+
+  /* Semantic tokens (light) */
+  --background: var(--foam);
+  --foreground: #1a1a1a;
+  --surface: #ffffff;
+  --surface-foreground: #0f172a;
+  --primary: var(--green);
+  --primary-foreground: #ffffff;
+  --muted: #e7e9ec;
+  --muted-foreground: #475569;
+  --accent: var(--sand);
+  --accent-foreground: #1b1b1b;
+  --destructive: var(--chestnut);
+  --destructive-foreground: #ffffff;
 }
 
 @theme inline {
+  /* Expose tokens to Tailwind v4 */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0f14;
+    --foreground: #e5e7eb;
+    --surface: #0f1720;
+    --surface-foreground: #e5e7eb;
+    --muted: #1f2937;
+    --muted-foreground: #cbd5e1;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+
+/* Basic utility classes for cards and buttons using semantic colors */
+.card {
+  background-color: var(--surface);
+  color: var(--surface-foreground);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-destructive {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
 }
