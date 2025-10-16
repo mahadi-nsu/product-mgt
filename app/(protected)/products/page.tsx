@@ -1,24 +1,16 @@
 "use client";
 import useSWR from "swr";
-import { useEffect } from "react";
-import { useAppSelector } from "@/store";
+import { formatPrice } from "@/features/products/utils";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 
 export default function ProductsPage() {
-  const token = useAppSelector((s) => s.auth.token);
-  useEffect(() => {
-    if (!token) window.location.href = "/login";
-  }, [token]);
-
   const { data, error, isLoading } = useSWR(
     `${API}/products?limit=10&offset=0`
   );
 
-  if (!token) return null;
-
   return (
-    <main className="p-6">
+    <main className="p-0">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Products</h1>
         <a href="/products/new" className="btn-primary rounded-md px-4 py-2">
@@ -42,7 +34,7 @@ export default function ProductsPage() {
               />
               <div>
                 <h3 className="font-medium">{p.name}</h3>
-                <p className="text-sm text-gray-500">${p.price}</p>
+                <p className="text-sm text-gray-500">{formatPrice(p.price)}</p>
               </div>
             </div>
           </a>
