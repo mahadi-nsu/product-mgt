@@ -9,15 +9,16 @@ export default function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const token = useAppSelector((s) => s.auth.token);
+  const { token, hydrated } = useAppSelector((s) => s.auth);
   const router = useRouter();
 
   useEffect(() => {
-    if (!token) {
+    if (hydrated && !token) {
       router.replace("/login");
     }
-  }, [token, router]);
+  }, [token, hydrated, router]);
 
+  if (!hydrated) return null;
   if (!token) return null;
 
   return (
