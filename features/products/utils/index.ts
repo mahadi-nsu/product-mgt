@@ -1,7 +1,7 @@
 export function formatPrice(centsOrNumber: number) {
   const value = Number(centsOrNumber);
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat("bn-BD", {
     style: "currency",
-    currency: "USD",
+    currency: "BDT",
   }).format(value);
 }
