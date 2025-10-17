@@ -87,7 +87,7 @@ export default function ProductDetails({ slug }: { slug: string }) {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              href={`/products/${product.id}/edit`}
+              href={`/products/${product.slug}/edit`}
               className="rounded-md px-3 py-2 text-sm bg-[var(--sand)] text-white hover:brightness-110"
             >
               Edit
@@ -171,7 +171,7 @@ export default function ProductDetails({ slug }: { slug: string }) {
                       });
                       await new Promise((r) => setTimeout(r, 1500));
                     }
-                  } catch (e) {
+                  } catch {
                     setFeedback({ type: "error", msg: "Network error" });
                     await new Promise((r) => setTimeout(r, 1500));
                   } finally {
