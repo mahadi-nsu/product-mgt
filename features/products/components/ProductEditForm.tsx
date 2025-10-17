@@ -11,10 +11,12 @@ import { useEffect } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 
-// Schema for edit form (only name and description can be updated)
+// Schema for edit form (all fields can be updated)
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
   description: z.string().min(5, "Description is required"),
+  price: z.coerce.number().positive("Price must be greater than 0"),
+  categoryId: z.string().uuid("Select a category"),
 });
 
 type FormValues = z.input<typeof schema>;
@@ -33,6 +35,8 @@ export default function ProductEditForm({ productSlug }: ProductEditFormProps) {
     isLoading,
   } = useSWR<Product>(`${API}/products/${productSlug}`);
 
+  const { data: categories } = useSWR<Category[]>(`${API}/categories`);
+
   const {
     register,
     handleSubmit,
@@ -49,6 +53,8 @@ export default function ProductEditForm({ productSlug }: ProductEditFormProps) {
       reset({
         name: product.name,
         description: product.description,
+        price: product.price,
+        categoryId: product.category.id,
       });
     }
   }, [product, reset]);
@@ -63,7 +69,10 @@ export default function ProductEditForm({ productSlug }: ProductEditFormProps) {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          price: Number(values.price), // ensure numeric
+        }),
       });
 
       if (!res.ok) {
@@ -125,30 +134,44 @@ export default function ProductEditForm({ productSlug }: ProductEditFormProps) {
           )}
         </div>
 
-        {/* Price (read-only) */}
+        {/* Price */}
         <div>
           <label className="block text-sm font-medium mb-1">Price (BDT)</label>
           <input
-            type="text"
-            value={product.price.toLocaleString()}
-            disabled
-            className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500 cursor-not-allowed"
+            type="number"
+            step="any"
+            {...register("price")}
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[--color-primary]"
+            placeholder="1000"
           />
-          <p className="text-xs text-gray-500 mt-1">Price cannot be changed</p>
+          {errors.price && (
+            <p className="text-sm text-[--color-destructive] mt-1">
+              {errors.price.message}
+            </p>
+          )}
         </div>
 
-        {/* Category (read-only) */}
+        {/* Category */}
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium mb-1">Category</label>
-          <input
-            type="text"
-            value={product.category.name}
-            disabled
-            className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500 cursor-not-allowed"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Category cannot be changed
-          </p>
+          <select
+            {...register("categoryId")}
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[--color-primary]"
+          >
+            <option value="" disabled>
+              Select a category
+            </option>
+            {categories?.map((c: Category) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {errors.categoryId && (
+            <p className="text-sm text-[--color-destructive] mt-1">
+              {errors.categoryId.message}
+            </p>
+          )}
         </div>
 
         {/* Description */}
