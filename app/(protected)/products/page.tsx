@@ -1,32 +1,70 @@
 "use client";
 import useSWR from "swr";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ProductCard from "@/features/products/components/ProductCard";
 import PaginationControls from "@/features/products/components/PaginationControls";
+import FilterBar from "@/features/products/components/FilterBar";
 import { Product } from "@/features/products/types";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 const ITEMS_PER_PAGE = 12;
 
 export default function ProductsPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const { data, error, isLoading } = useSWR(
-    `${API}/products?limit=${ITEMS_PER_PAGE}&offset=${
-      (currentPage - 1) * ITEMS_PER_PAGE
-    }`
+  const searchedText = searchParams.get("searchedText") || "";
+  const categoryId = searchParams.get("categoryId") || "";
+  const offsetParam = Number(searchParams.get("offset") || "0");
+
+  const initialPage = Math.floor(offsetParam / ITEMS_PER_PAGE) + 1;
+  const [currentPage, setCurrentPage] = useState(initialPage);
+
+  useEffect(() => {
+    // Keep local page in sync when URL offset changes (e.g., via back/forward)
+    const urlPage =
+      Math.floor(Number(searchParams.get("offset") || "0") / ITEMS_PER_PAGE) +
+      1;
+    if (!Number.isNaN(urlPage) && urlPage !== currentPage) {
+      setCurrentPage(urlPage);
+    }
+  }, [searchParams, currentPage]);
+
+  // Build API key prioritizing category filter via products endpoint per requirements
+  const key = categoryId
+    ? `${API}/products?limit=${ITEMS_PER_PAGE}&offset=${
+        (currentPage - 1) * ITEMS_PER_PAGE
+      }&categoryId=${categoryId}`
+    : searchedText
+    ? `${API}/products/search?searchedText=${encodeURIComponent(searchedText)}`
+    : `${API}/products?limit=${ITEMS_PER_PAGE}&offset=${
+        (currentPage - 1) * ITEMS_PER_PAGE
+      }`;
+
+  const { data, error, isLoading } = useSWR(key);
+
+  const { data: totalList } = useSWR(
+    categoryId ? `${API}/products?categoryId=${categoryId}` : `${API}/products`
   );
 
-  const { data: totalList, error: countError } = useSWR(`${API}/products`);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.set("offset", String((page - 1) * ITEMS_PER_PAGE));
+    router.replace(`${pathname}?${sp.toString()}`);
+  };
 
   return (
     <main className="p-0">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3">
         <h1 className="text-2xl font-semibold">Products</h1>
         <a href="/products/new" className="btn-primary rounded-md px-4 py-2">
           New Product
         </a>
       </div>
+      <FilterBar />
 
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -57,7 +95,18 @@ export default function ProductsPage() {
 
       {data && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {data.map((product: Product) => (
+          {(Array.isArray(data)
+            ? searchedText && categoryId
+              ? data.filter((p: any) =>
+                  String(p.name || "")
+                    .toLowerCase()
+                    .includes(searchedText.toLowerCase())
+                )
+              : searchedText && !categoryId
+              ? data
+              : data
+            : []
+          ).map((product: Product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -92,14 +141,14 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Pagination Controls */}
-      {data && data.length > 0 && (
+      {/* Pagination Controls: shown for category listing or plain listing; hidden for pure search */}
+      {(categoryId || !searchedText) && data && data.length > 0 && (
         <div className="mt-8">
           <PaginationControls
             currentPage={currentPage}
             totalItems={Array.isArray(totalList) ? totalList.length : 0}
             itemsPerPage={ITEMS_PER_PAGE}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
           />
         </div>
       )}
