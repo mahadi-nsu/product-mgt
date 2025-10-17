@@ -3,13 +3,14 @@ import useSWR from "swr";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { Product } from "@/features/products/types";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 
 export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
-  const { data, error, isLoading } = useSWR(`${API}/products/${slug}`);
+  const { data, error, isLoading } = useSWR<Product>(`${API}/products/${slug}`);
 
   if (isLoading) {
     return (
@@ -42,7 +43,7 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const product = data as any;
+  const product = data as Product;
   const imageSrc =
     Array.isArray(product.images) && product.images.length > 0
       ? product.images[0]
