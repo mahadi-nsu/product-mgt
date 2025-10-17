@@ -4,12 +4,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Product } from "@/features/products/types";
+import { useAppSelector } from "@/store";
+import { useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 
 export default function ProductDetails({ slug }: { slug: string }) {
   const router = useRouter();
   const { data, error, isLoading } = useSWR<Product>(`${API}/products/${slug}`);
+  const token = useAppSelector((s) => s.auth.token);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
 
   if (isLoading) {
     return (
@@ -83,7 +92,10 @@ export default function ProductDetails({ slug }: { slug: string }) {
             >
               Edit
             </Link>
-            <button className="btn-destructive rounded-md px-3 py-2 text-sm">
+            <button
+              className="btn-destructive rounded-md px-3 py-2 text-sm"
+              onClick={() => setShowConfirm(true)}
+            >
               Delete
             </button>
           </div>
@@ -103,6 +115,77 @@ export default function ProductDetails({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
+
+      {feedback && (
+        <div
+          className={`fixed bottom-6 right-6 rounded-md px-4 py-2 text-sm shadow ${
+            feedback.type === "success"
+              ? "bg-green-600 text-white"
+              : "bg-red-600 text-white"
+          }`}
+        >
+          {feedback.msg}
+        </div>
+      )}
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm grid place-items-center p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Delete product?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This sends a DELETE request and returns 200 on success.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="rounded-md border px-3 py-2 text-sm bg-white hover:bg-gray-50"
+                onClick={() => setShowConfirm(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-destructive rounded-md px-3 py-2 text-sm disabled:opacity-60"
+                onClick={async () => {
+                  if (!token) {
+                    setFeedback({ type: "error", msg: "Not authenticated" });
+                    return;
+                  }
+                  setIsDeleting(true);
+                  try {
+                    const res = await fetch(`${API}/products/${product.id}`, {
+                      method: "DELETE",
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (res.ok) {
+                      setFeedback({
+                        type: "success",
+                        msg: "Product deleted successfully",
+                      });
+                      setShowConfirm(false);
+                      await new Promise((r) => setTimeout(r, 1500));
+                      router.push("/products");
+                    } else {
+                      setFeedback({
+                        type: "error",
+                        msg: `Delete failed: ${res.status}`,
+                      });
+                      await new Promise((r) => setTimeout(r, 1500));
+                    }
+                  } catch (e) {
+                    setFeedback({ type: "error", msg: "Network error" });
+                    await new Promise((r) => setTimeout(r, 1500));
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Confirm delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
