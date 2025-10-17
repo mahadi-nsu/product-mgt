@@ -1,14 +1,23 @@
 "use client";
 import useSWR from "swr";
+import { useState } from "react";
 import ProductCard from "@/features/products/components/ProductCard";
+import PaginationControls from "@/features/products/components/PaginationControls";
 import { Product } from "@/features/products/types";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
+const ITEMS_PER_PAGE = 12;
 
 export default function ProductsPage() {
+  const [currentPage, setCurrentPage] = useState(1);
+
   const { data, error, isLoading } = useSWR(
-    `${API}/products?limit=10&offset=0`
+    `${API}/products?limit=${ITEMS_PER_PAGE}&offset=${
+      (currentPage - 1) * ITEMS_PER_PAGE
+    }`
   );
+
+  const { data: totalList, error: countError } = useSWR(`${API}/products`);
 
   return (
     <main className="p-0">
@@ -80,6 +89,18 @@ export default function ProductsPage() {
           <a href="/products/new" className="btn-primary rounded-md px-4 py-2">
             Create Product
           </a>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {data && data.length > 0 && (
+        <div className="mt-8">
+          <PaginationControls
+            currentPage={currentPage}
+            totalItems={Array.isArray(totalList) ? totalList.length : 0}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
     </main>

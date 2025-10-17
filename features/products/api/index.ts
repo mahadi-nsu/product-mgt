@@ -12,3 +12,11 @@ export async function getProducts(params?: Record<string, string | number>) {
   if (!res.ok) throw new Error("Failed to fetch products");
   return res.json();
 }
+
+export async function getProductsCount(): Promise<number> {
+  // Get total count by fetching with a high limit
+  const res = await fetch(`${API}/products?limit=1000`);
+  if (!res.ok) throw new Error("Failed to fetch products count");
+  const products = await res.json();
+  return Array.isArray(products) ? products.length : 0;
+}
