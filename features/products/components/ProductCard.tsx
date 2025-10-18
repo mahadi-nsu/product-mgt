@@ -14,10 +14,10 @@ export default function ProductCard({ product }: ProductCardProps) {
       ? product.images[0]
       : "/placeholder-product.jpg";
   return (
-    <Link href={`/products/${product.slug}`} className="group block">
-      <div className="card overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02]">
+    <Link href={`/products/${product.slug}`} className="group block h-full">
+      <div className="card overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] h-full flex flex-col">
         {/* Image Section */}
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
+        <div className="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0">
           <Image
             src={imageSrc}
             alt={product.name}
@@ -38,7 +38,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content Section */}
-        <div className="p-4">
+        <div className="p-4 flex flex-col flex-grow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-[var(--primary)] transition-colors">
             {product.name}
           </h3>
@@ -48,7 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
 
           {/* Price */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mt-auto">
             <span className="text-xl font-bold text-[var(--primary)]">
               {formatPrice(product.price)}
             </span>

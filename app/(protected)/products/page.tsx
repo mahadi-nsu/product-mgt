@@ -67,7 +67,7 @@ export default function ProductsPage() {
       <FilterBar />
 
       {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="card overflow-hidden animate-pulse">
               <div className="aspect-square bg-gray-200"></div>
@@ -94,7 +94,7 @@ export default function ProductsPage() {
       )}
 
       {data && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {(Array.isArray(data)
             ? searchedText && categoryId
               ? data.filter((p: any) =>
