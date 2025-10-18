@@ -1,11 +1,12 @@
 "use client";
 import useSWR from "swr";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import ProductCard from "@/features/products/components/ProductCard";
 import PaginationControls from "@/features/products/components/PaginationControls";
 import FilterBar from "@/features/products/components/FilterBar";
 import { Product } from "@/features/products/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 const ITEMS_PER_PAGE = 12;
@@ -60,9 +61,9 @@ export default function ProductsPage() {
     <main className="p-0">
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-2xl font-semibold">Products</h1>
-        <a href="/products/new" className="btn-primary rounded-md px-4 py-2">
+        <Link href="/products/new" className="btn-primary rounded-md px-4 py-2">
           New Product
-        </a>
+        </Link>
       </div>
       <FilterBar />
 
@@ -97,7 +98,7 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {(Array.isArray(data)
             ? searchedText && categoryId
-              ? data.filter((p: any) =>
+              ? data.filter((p: Product) =>
                   String(p.name || "")
                     .toLowerCase()
                     .includes(searchedText.toLowerCase())
@@ -135,9 +136,12 @@ export default function ProductsPage() {
           <p className="text-gray-600 mb-4">
             Get started by creating your first product.
           </p>
-          <a href="/products/new" className="btn-primary rounded-md px-4 py-2">
+          <Link
+            href="/products/new"
+            className="btn-primary rounded-md px-4 py-2"
+          >
             Create Product
-          </a>
+          </Link>
         </div>
       )}
 

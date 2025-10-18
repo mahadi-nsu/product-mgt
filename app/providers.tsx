@@ -2,12 +2,10 @@
 import { Provider } from "react-redux";
 import { SWRConfig } from "swr";
 import { store } from "@/store";
-import { useAppSelector } from "@/store";
 import { useEffect } from "react";
 import { loadFromStorage } from "@/store/slices/authSlice";
 
 function AuthBootstrap() {
-  const token = useAppSelector((s) => s.auth.token);
   useEffect(() => {
     store.dispatch(loadFromStorage());
   }, []);
