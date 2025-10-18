@@ -1,7 +1,7 @@
 "use client";
 import AuthHeader from "@/features/auth/components/AuthHeader";
 import { useAppSelector } from "@/store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ProtectedLayout({
@@ -11,10 +11,17 @@ export default function ProtectedLayout({
 }) {
   const { token, hydrated } = useAppSelector((s) => s.auth);
   const router = useRouter();
+  const [showRedirectMessage, setShowRedirectMessage] = useState(false);
 
   useEffect(() => {
     if (hydrated && !token) {
-      router.replace("/login");
+      setShowRedirectMessage(true);
+      // Show redirect message for 2 seconds before redirecting
+      const timer = setTimeout(() => {
+        router.replace("/login");
+      }, 2000);
+
+      return () => clearTimeout(timer);
     }
   }, [token, hydrated, router]);
 
@@ -36,7 +43,16 @@ export default function ProtectedLayout({
       <div className="min-h-dvh flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to login...</p>
+          <p className="text-gray-600">
+            {showRedirectMessage
+              ? "Redirecting to login..."
+              : "Checking authentication..."}
+          </p>
+          {showRedirectMessage && (
+            <p className="text-sm text-gray-500 mt-2">
+              You will be redirected in 2 seconds
+            </p>
+          )}
         </div>
       </div>
     );
