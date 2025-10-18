@@ -28,17 +28,28 @@ const authSlice = createSlice({
       }
     },
     loadFromStorage: (state) => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined") {
+        state.hydrated = true;
+        return;
+      }
       const raw = localStorage.getItem("auth");
-      if (!raw) return;
+      if (!raw) {
+        state.hydrated = true;
+        return;
+      }
       try {
         const parsed = JSON.parse(raw) as AuthState;
         state.email = parsed.email;
         state.token = parsed.token;
         state.hydrated = true;
       } catch {
-      } finally {
+        // If parsing fails, clear the invalid data and mark as hydrated
+        state.email = null;
+        state.token = null;
         state.hydrated = true;
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("auth");
+        }
       }
     },
     logout: (state) => {
