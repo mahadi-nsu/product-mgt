@@ -3,17 +3,9 @@ import useSWR from "swr";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Category } from "@/features/products/types";
+import { useDebounced } from "@/features/products/utils";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
-
-function useDebounced<T>(value: T, delay = 400) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
-}
 
 export default function FilterBar() {
   const params = useSearchParams();

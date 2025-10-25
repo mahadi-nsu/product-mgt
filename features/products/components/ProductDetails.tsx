@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Product } from "@/features/products/types";
 import { useAppSelector } from "@/store";
 import { useState } from "react";
+import { formatPrice } from "@/features/products/utils";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 
@@ -82,7 +83,7 @@ export default function ProductDetails({ slug }: { slug: string }) {
           <div>
             <div className="text-sm text-gray-500">Price</div>
             <div className="text-2xl font-bold text-[var(--primary)]">
-              ৳ {new Intl.NumberFormat("bn-BD").format(product.price)}
+              {formatPrice(product.price)}
             </div>
           </div>
           <div className="flex items-center gap-2">
