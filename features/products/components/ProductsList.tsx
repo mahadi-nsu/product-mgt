@@ -47,6 +47,7 @@ export default function ProductsList() {
         </div>
       )}
 
+      {/* error state */}
       {error && (
         <div className="card p-6 text-center">
           <p className="text-[--color-destructive] mb-2">
@@ -58,6 +59,7 @@ export default function ProductsList() {
         </div>
       )}
 
+      {/* products list */}
       {products && products.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {products.map((product) => (
@@ -66,6 +68,7 @@ export default function ProductsList() {
         </div>
       )}
 
+      {/* no products found */}
       {products && products.length === 0 && (
         <div className="card p-8 text-center">
           <div className="text-gray-400 mb-4">
