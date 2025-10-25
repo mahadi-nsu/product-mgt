@@ -1,58 +1,45 @@
 "use client";
 import useSWR from "swr";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Category } from "@/features/products/types";
-import { useDebounced } from "@/features/products/utils";
+import { useDebounced, useUrlParams } from "@/features/products/utils";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 
 export default function FilterBar() {
+  // local states
   const params = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
+  const { replaceParam } = useUrlParams();
   const [searchInput, setSearchInput] = useState(
     params.get("searchedText") || ""
   );
   const debouncedSearch = useDebounced(searchInput);
-
   const currentCategoryId = params.get("categoryId") || "";
 
+  // remote state
   const { data: categories } = useSWR<Category[]>(`${API}/categories`);
 
-  const replaceParam = useCallback(
-    (next: Record<string, string | null>) => {
-      const sp = new URLSearchParams(params.toString());
-      Object.entries(next).forEach(([k, v]) => {
-        if (v === null || v === "") sp.delete(k);
-        else sp.set(k, v);
-      });
-      // reset pagination when filters change
-      sp.set("offset", "0");
-      router.replace(`${pathname}?${sp.toString()}`);
-    },
-    [params, pathname, router]
-  );
-
+  // apply debounced search to URL
   useEffect(() => {
-    // apply debounced search to URL
     if (debouncedSearch !== (params.get("searchedText") || "")) {
       replaceParam({ searchedText: debouncedSearch || null });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  // change category handler
   const onChangeCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     replaceParam({ categoryId: value || null });
   };
 
+  // clear search and category
   const onClear = () => {
     setSearchInput("");
     replaceParam({ searchedText: null, categoryId: null });
   };
 
+  // get selected category name
   const selectedCategoryName = useMemo(() => {
     return categories?.find((c: Category) => c.id === currentCategoryId)?.name;
   }, [categories, currentCategoryId]);
@@ -61,6 +48,7 @@ export default function FilterBar() {
     <div className="sticky top-[56px] z-10 mb-6 -mx-4 sm:mx-0">
       <div className="mx-4 sm:mx-0 rounded-xl bg-[var(--surface)]/80 backdrop-blur border border-black/5 p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 flex gap-3">
+          {/* search input */}
           <div className="relative flex-1">
             <input
               type="text"
@@ -83,6 +71,7 @@ export default function FilterBar() {
               </svg>
             </span>
           </div>
+          {/* category select */}
           <select
             value={currentCategoryId}
             onChange={onChangeCategory}
@@ -97,6 +86,7 @@ export default function FilterBar() {
           </select>
         </div>
         <div className="flex items-center gap-2">
+          {/* clear button */}
           {(searchInput || currentCategoryId) && (
             <button
               onClick={onClear}
@@ -107,6 +97,7 @@ export default function FilterBar() {
           )}
         </div>
       </div>
+      {/* selected category name */}
       {selectedCategoryName && (
         <div className="mx-4 sm:mx-0 mt-2 text-xs text-gray-600">
           Filtering by: {selectedCategoryName}
