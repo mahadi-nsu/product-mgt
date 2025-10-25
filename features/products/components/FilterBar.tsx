@@ -2,6 +2,7 @@
 import useSWR from "swr";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Category } from "@/features/products/types";
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "https://api.bitechx.com";
 
@@ -26,7 +27,7 @@ export default function FilterBar() {
 
   const currentCategoryId = params.get("categoryId") || "";
 
-  const { data: categories } = useSWR(`${API}/categories`);
+  const { data: categories } = useSWR<Category[]>(`${API}/categories`);
 
   const replaceParam = useCallback(
     (next: Record<string, string | null>) => {
@@ -61,7 +62,7 @@ export default function FilterBar() {
   };
 
   const selectedCategoryName = useMemo(() => {
-    return categories?.find((c: any) => c.id === currentCategoryId)?.name;
+    return categories?.find((c: Category) => c.id === currentCategoryId)?.name;
   }, [categories, currentCategoryId]);
 
   return (
@@ -96,7 +97,7 @@ export default function FilterBar() {
             className="w-[200px] rounded-md border border-gray-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[--color-primary]"
           >
             <option value="">All categories</option>
-            {categories?.map((c: any) => (
+            {categories?.map((c: Category) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>

@@ -63,6 +63,10 @@ export default function ProductEditForm({ productSlug }: ProductEditFormProps) {
     if (!product) return;
 
     try {
+      if (!token) {
+        throw new Error("Not authenticated");
+      }
+
       const res = await fetch(`${API}/products/${product.id}`, {
         method: "PUT",
         headers: {
@@ -81,6 +85,7 @@ export default function ProductEditForm({ productSlug }: ProductEditFormProps) {
       }
 
       const updated = await res.json();
+
       router.push(`/products/${updated.slug}`);
     } catch (e) {
       alert((e as Error).message);
