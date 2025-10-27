@@ -22,9 +22,20 @@ export default function ProductsList() {
       {/* header and filter bar */}
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-2xl font-semibold">Products</h1>
-        <Link href="/products/new" className="btn-primary rounded-md px-4 py-2">
-          New Product
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/all-products"
+            className="rounded-md border px-4 py-2 text-sm bg-white hover:bg-gray-50"
+          >
+            View All Products
+          </Link>
+          <Link
+            href="/products/new"
+            className="btn-primary rounded-md px-4 py-2"
+          >
+            New Product
+          </Link>
+        </div>
       </div>
 
       {/* filter bar */}

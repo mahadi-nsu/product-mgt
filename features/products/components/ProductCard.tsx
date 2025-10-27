@@ -9,10 +9,19 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const imageSrc =
-    Array.isArray(product.images) && product.images.length > 0
-      ? product.images[0]
-      : "/placeholder-product.jpg";
+  const imageSrc = (() => {
+    // Check if images array exists and has valid content
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      const firstImage = product.images[0];
+      // Only use if it's a non-empty string
+      if (typeof firstImage === "string" && firstImage.trim() !== "") {
+        return firstImage;
+      }
+    }
+    // Fallback to a data URI placeholder
+    return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='18' fill='%236b7280' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
+  })();
+
   return (
     <Link href={`/products/${product.slug}`} className="group block h-full">
       <div className="card overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] h-full flex flex-col">
@@ -23,11 +32,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             alt={product.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-110"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src =
-                "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='18' fill='%236b7280' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
-            }}
           />
           {/* Category Badge */}
           <div className="absolute top-3 left-3">
