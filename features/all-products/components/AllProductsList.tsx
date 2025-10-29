@@ -1,4 +1,6 @@
 "use client";
+import { useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import ProductCard from "@/features/products/components/ProductCard";
 import { useAllProducts } from "@/features/all-products/api";
 import Link from "next/link";
@@ -6,6 +8,18 @@ import PerformanceMonitor from "@/features/debug/PerformanceMonitor";
 
 export default function AllProductsList() {
   const { products, isLoading, error, totalCount } = useAllProducts();
+
+  // Ref for the scroll container (Step 3)
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // Virtualizer hook - will configure in next steps
+  // For now, just a placeholder that won't break anything
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const rowVirtualizer = useVirtualizer({
+    count: products.length, // Total items to virtualize
+    getScrollElement: () => parentRef.current, // Which element scrolls
+    estimateSize: () => 400, // Estimated height per item (will adjust)
+  });
 
   if (isLoading) {
     return (
@@ -91,10 +105,18 @@ export default function AllProductsList() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div
+          ref={parentRef}
+          className="overflow-auto"
+          style={{
+            height: "calc(100vh - 180px)", // Viewport height minus header space
+          }}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         </div>
       )}
 
