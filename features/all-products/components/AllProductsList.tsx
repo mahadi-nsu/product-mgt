@@ -1,25 +1,77 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import ProductCard from "@/features/products/components/ProductCard";
 import { useAllProducts } from "@/features/all-products/api";
+import { Product } from "@/features/products/types";
 import Link from "next/link";
 import PerformanceMonitor from "@/features/debug/PerformanceMonitor";
+
+// Hook to detect column count based on screen size (Step 4)
+function useColumnCount() {
+  const [columns, setColumns] = useState(4);
+
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth;
+      if (width >= 1280) setColumns(4); // xl: 4 columns
+      else if (width >= 1024) setColumns(3); // lg: 3 columns
+      else if (width >= 640) setColumns(2); // sm: 2 columns
+      else setColumns(1); // default: 1 column
+    };
+
+    updateColumns(); // Set initial value
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, []);
+
+  return columns;
+}
 
 export default function AllProductsList() {
   const { products, isLoading, error, totalCount } = useAllProducts();
 
+  // Detect responsive column count (Step 4)
+  const columns = useColumnCount();
+
+  // Step 5: Group products into rows based on column count
+  const rows = useMemo(() => {
+    const result: Product[][] = [];
+    for (let i = 0; i < products.length; i += columns) {
+      result.push(products.slice(i, i + columns));
+    }
+    return result;
+  }, [products, columns]);
+
+  // Calculate total row count
+  const rowCount = rows.length;
+
   // Ref for the scroll container (Step 3)
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // Virtualizer hook - will configure in next steps
-  // For now, just a placeholder that won't break anything
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Virtualizer hook - now using row count (Step 5)
   const rowVirtualizer = useVirtualizer({
-    count: products.length, // Total items to virtualize
+    count: rowCount, // Total rows to virtualize (not products!)
     getScrollElement: () => parentRef.current, // Which element scrolls
-    estimateSize: () => 400, // Estimated height per item (will adjust)
+    estimateSize: () => 400, // Estimated height per row (will adjust)
+    overscan: 2, // Render 2 extra rows outside viewport for smooth scrolling
   });
+
+  // Generate grid column class based on column count
+  const gridColsClass = useMemo(() => {
+    switch (columns) {
+      case 1:
+        return "grid-cols-1";
+      case 2:
+        return "grid-cols-2";
+      case 3:
+        return "grid-cols-3";
+      case 4:
+        return "grid-cols-4";
+      default:
+        return "grid-cols-1";
+    }
+  }, [columns]);
 
   if (isLoading) {
     return (
@@ -112,10 +164,39 @@ export default function AllProductsList() {
             height: "calc(100vh - 180px)", // Viewport height minus header space
           }}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          {/* Step 6: Virtual rendering container */}
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {/* Only render visible rows */}
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const productsInRow = rows[virtualRow.index];
+
+              return (
+                <div
+                  key={virtualRow.key}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                >
+                  {/* Grid for products in this row */}
+                  <div className={`grid ${gridColsClass} gap-6 items-stretch`}>
+                    {productsInRow.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
