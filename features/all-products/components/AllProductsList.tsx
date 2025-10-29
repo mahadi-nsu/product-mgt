@@ -2,6 +2,7 @@
 import ProductCard from "@/features/products/components/ProductCard";
 import { useAllProducts } from "@/features/all-products/api";
 import Link from "next/link";
+import PerformanceMonitor from "@/features/debug/PerformanceMonitor";
 
 export default function AllProductsList() {
   const { products, isLoading, error, totalCount } = useAllProducts();
@@ -96,6 +97,9 @@ export default function AllProductsList() {
           ))}
         </div>
       )}
+
+      {/* Performance Monitor - for measuring issues before virtualization */}
+      <PerformanceMonitor />
     </main>
   );
 }
